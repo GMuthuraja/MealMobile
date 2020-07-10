@@ -24,3 +24,26 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+
+  @font-face {
+    font-family: "SaudiaRegular";
+    src: url("assets/fonts/SaudiaTextWeb-Regular.ttf");
+    }
+    @font-face {
+      font-family: "SaudiaArabicLight";
+      src: url("assets/fonts/SaudiaTextArabic-Light.ttf");
+      }
+    
+    html {
+      font-size: 62.5%;
+      --ion-font-family: "SaudiaRegular";
+    }
+    body{
+      font-family:"SaudiaRegular", Arial, Helvetica, sans-serif;
+    }
+    ion-button
+    {
+      --ion-font-family: "SaudiaArabicLight";
+    }
+    
