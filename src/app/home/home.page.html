@@ -1,15 +1,12 @@
 <ion-content [fullscreen]="true">
-  
+
   <ion-grid class="holder ion-no-padding" *ngIf="mealEligible">
     <ion-row class="ion-no-padding ion-align-items-center">
       <ion-col class="ion-padding">
         <div class="ion-padding-horizontal innerHolder">
           <div class="ion-padding-horizontal">
             <ion-img class="img33 mrgn50Auto" src="../../assets/images/tickBig.svg"></ion-img>
-            <p>This Passenger is eligible to have </p>
-            <ion-item lines="none">
-              <p class="bold ion-padding-horizontal indigo">Meal</p>
-            </ion-item>
+            <p>This Passenger is eligible to have Meal</p>
           </div>
           <ion-button class="" shape="round" size="large" (click)="confirmMeal()">Confirm Meal</ion-button>
         </div>
@@ -24,9 +21,6 @@
           <div class="ion-padding-horizontal">
             <ion-img class="img33 mrgn50Auto" src="../../assets/images/cancelBig.svg"></ion-img>
             <p class="danger">This Passenger is not eligible to have any compensations</p>
-            <ion-item lines="none">
-              <p class="bold ion-padding-horizontal greyOpaque">Meal</p>
-            </ion-item>
           </div>
           <ion-button size="large" (click)="goBack()">Back to scan</ion-button>
         </div>

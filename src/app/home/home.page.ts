@@ -12,19 +12,17 @@ export class HomePage {
   mealEligible: boolean = true;
   accommodationEligible: boolean = false;
   mealInEligible: boolean = false;
-  accommodationInEligible: boolean = true;
+  accommodationInEligible: boolean = false;
 
   constructor(private navCtrl: NavController) { }
 
   confirmMeal() {
-    this.accommodationEligible = true;
-    this.mealEligible = false;
+    alert("Meal Confirmed!");
   }
 
   confirmAccommodation() {
     alert("Accommodation Confirmed!");
   }
-
 
   goBack() {
     this.navCtrl.pop();
