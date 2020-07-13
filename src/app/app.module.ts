@@ -13,6 +13,8 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { environment } from '../environments/environment';
 
+import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],
@@ -26,6 +28,7 @@ import { environment } from '../environments/environment';
   providers: [
     StatusBar,
     SplashScreen,
+    BarcodeScanner,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

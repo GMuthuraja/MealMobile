@@ -1,41 +1,49 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { Platform } from '@ionic/angular';
+import { BarcodeScanner, BarcodeScannerOptions } from '@ionic-native/barcode-scanner/ngx';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-scan',
   templateUrl: './scan.page.html',
   styleUrls: ['./scan.page.scss'],
 })
+
 export class ScanPage implements OnInit {
 
-  constructor(private firestore: AngularFirestore) {
+  constructor(
+    private firestore: AngularFirestore,
+    private barCodeScanner: BarcodeScanner,
+    private router: Router,
+    private platform: Platform) { }
 
-    let payload = {
-      flight_no: '4123',
-      airport_code: 'JED',
-      date: '2020-06-09'
+  ngOnInit() { }
+
+  openScanner() {
+    let preventBack = this.platform.backButton.subscribeWithPriority(9999, () => { });
+
+    var barcodeOptions: BarcodeScannerOptions = {
+      formats: 'QR_CODE,PDF_417'
     }
 
-    let res = {
-      flight_no: '4114',
-      airport_code: 'CHE',
-      date: '2020-07-15'
-    }
+    this.barCodeScanner.scan(barcodeOptions).then(data => {
+      console.log("Barcode Value : ", data);
 
-    //this.firestore.collection('FlightInfo').doc(payload.flight_no).set(payload);
+      //If scan cancelled by user return with null
+      if (data.cancelled) {
+        return;
+      }
+      
+      //Navigate to Success screen
+      this.router.navigate(['home']);
 
-    //this.firestore.doc('FlightInfo/' +payload.flight_no).update(res);
-
-    // this.firestore.collection("FlightInfo").get().subscribe(querySnapshot => {
-    //   querySnapshot.forEach(doc => {
-    //     console.log(doc.id, " => ", doc.data());
-    //   });
-    // });
-
-    //this.firestore.doc('FlightInfo/' + payload.flight_no).delete();
+    }).catch(err => {
+      console.log("Bar code error : ", err);
+    }).finally(() => {
+      window.setTimeout(() => {
+        preventBack.unsubscribe();
+      }, 1000);
+    });
   }
-
-  ngOnInit() {
-  }
-
 }

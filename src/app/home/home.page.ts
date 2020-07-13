@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { NavController, AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -14,14 +14,30 @@ export class HomePage {
   mealInEligible: boolean = false;
   accommodationInEligible: boolean = false;
 
-  constructor(private navCtrl: NavController) { }
+  constructor(
+    private navCtrl: NavController,
+    private alertController: AlertController) { }
 
-  confirmMeal() {
-    alert("Meal Confirmed!");
+  async confirmMeal() {
+    const alert = await this.alertController.create({
+      header: 'eStaff',
+      message: 'Meal Confirmed!',
+      backdropDismiss: false,
+      buttons: ['OK']
+    });
+
+    await alert.present();
   }
 
-  confirmAccommodation() {
-    alert("Accommodation Confirmed!");
+  async confirmAccommodation() {
+    const alert = await this.alertController.create({
+      header: 'eStaff',
+      message: 'Accommodation Confirmed!',
+      backdropDismiss: false,
+      buttons: ['OK']
+    });
+
+    await alert.present();
   }
 
   goBack() {
