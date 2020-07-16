@@ -46,4 +46,34 @@
     {
       --ion-font-family: "SaudiaArabicLight";
     }
+
+      
+$darkblue: var(--ion-color-btnbck); 
+$lightblue:var(--ion-color-businessBlue); 
+$list1: $darkblue, $lightblue;
+
+@mixin gradient($direction, $list) {
+  --background: -webkit-linear-gradient($direction, $list);
+  --background: -moz-linear-gradient($direction, $list);
+  --background: -o-linear-gradient($direction, $list);
+  --background: linear-gradient($direction, $list);
+  background: -webkit-linear-gradient($direction, $list);
+  background: -moz-linear-gradient($direction, $list);
+  background: -o-linear-gradient($direction, $list);
+  background: linear-gradient($direction, $list);
+}
+
+.buttonGradientBlue {
+  @include gradient(to right, $list1);
+  color: var(--ion-color-white);
+  --background-activated: gradient(to right, $list1);
+  border: gradient(to right, $list1) !important;
+  font-weight: bold;
+}
+
+.buttonGradientBlue:hover {
+  @include gradient(to right, $list1);
+  color: var(--ion-color-white);
+  --background-activated: gradient(to right, $list1);
+}
     

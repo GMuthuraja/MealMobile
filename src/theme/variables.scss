@@ -74,6 +74,12 @@
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;  
+
+
+  --ion-color-businessBlue :#517891; 
+  --ion-color-btnbck: #1D1760;
+  --ion-color-white: #ffffff;
+  --ion-color-royalBlue:#1D1760; 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -146,6 +152,7 @@
     --ion-color-light-shade: #1e2023;
     --ion-color-light-tint: #383a3e;
   }
+  
 
   /*
    * iOS Dark Theme

@@ -28,27 +28,7 @@
     </ion-row>
   </ion-grid>
 
-
-  <ion-grid class="holder ion-no-padding" *ngIf="accommodationEligible">
-    <ion-row class="ion-no-padding ion-align-items-center">
-      <ion-col class="ion-padding">
-        <div class="ion-padding-horizontal innerHolder">
-          <div class="ion-padding-horizontal">
-            <ion-img class="img33 mrgn50Auto" src="../../assets/images/tickBig.svg"></ion-img>
-            <p>This Passenger is eligible to have </p>
-            <ion-item lines="none">
-              <ion-icon src="../../assets/images/tickIndigo.svg" slot="start"></ion-icon>
-              Has already taken meal
-            </ion-item>
-          </div>
-          <ion-button shape="round" size="large" (click)="confirmAccommodation()">Confirm Accommodation</ion-button>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
-
-  <ion-grid class="holder ion-no-padding" *ngIf="accommodationInEligible">
+  <ion-grid class="holder ion-no-padding" *ngIf="mealTaken">
     <ion-row class="ion-no-padding ion-align-items-center">
       <ion-col class="ion-padding">
         <div class="ion-padding-horizontal innerHolder">
@@ -79,6 +59,24 @@
 
 
 
+
+<!-- <ion-grid class="holder ion-no-padding" *ngIf="accommodationEligible">
+  <ion-row class="ion-no-padding ion-align-items-center">
+    <ion-col class="ion-padding">
+      <div class="ion-padding-horizontal innerHolder">
+        <div class="ion-padding-horizontal">
+          <ion-img class="img33 mrgn50Auto" src="../../assets/images/tickBig.svg"></ion-img>
+          <p>This Passenger is eligible to have </p>
+          <ion-item lines="none">
+            <ion-icon src="../../assets/images/tickIndigo.svg" slot="start"></ion-icon>
+            Has already taken meal
+          </ion-item>
+        </div>
+        <ion-button shape="round" size="large" (click)="confirmAccommodation()">Confirm Accommodation</ion-button>
+      </div>
+    </ion-col>
+  </ion-row>
+</ion-grid> -->
 
 
 

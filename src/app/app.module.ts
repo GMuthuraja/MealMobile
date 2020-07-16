@@ -14,6 +14,8 @@ import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { environment } from '../environments/environment';
 
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+import { CalendarModule } from './calendar';
+import { DatePipe } from '@angular/common';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,6 +24,7 @@ import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
     BrowserModule, 
     IonicModule.forRoot(), 
     AppRoutingModule,
+    CalendarModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireDatabaseModule
   ],
@@ -29,6 +32,7 @@ import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
     StatusBar,
     SplashScreen,
     BarcodeScanner,
+    DatePipe,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]
