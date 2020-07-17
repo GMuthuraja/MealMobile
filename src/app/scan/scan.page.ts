@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { Platform, ModalController, AlertController } from '@ionic/angular';
+import { Platform, ModalController, AlertController, LoadingController } from '@ionic/angular';
 import { BarcodeScanner, BarcodeScannerOptions } from '@ionic-native/barcode-scanner/ngx';
 import { Router, NavigationExtras } from '@angular/router';
 import { CalendarModalOptions, CalendarModal, CalendarResult } from '../calendar';
 import { DatePipe } from '@angular/common';
-import { da } from 'date-fns/locale';
+import { GlobalService } from '../services/global.service';
 
 @Component({
   selector: 'app-scan',
@@ -13,18 +13,18 @@ import { da } from 'date-fns/locale';
   styleUrls: ['./scan.page.scss'],
 })
 
-export class ScanPage implements OnInit {
+export class ScanPage {
 
   constructor(
     private firestore: AngularFirestore,
     private barCodeScanner: BarcodeScanner,
     private router: Router,
     private datePipe: DatePipe,
+    private loadingController: LoadingController,
     private alertController: AlertController,
+    private globalService: GlobalService,
     private modalController: ModalController,
     private platform: Platform) { }
-
-  ngOnInit() { }
 
   async openCalendar(scan_data) {
     const options: CalendarModalOptions = {
@@ -46,7 +46,10 @@ export class ScanPage implements OnInit {
     const event: any = await myCalendar.onDidDismiss();
     const date: CalendarResult = event.data;
 
-    if (date !== null) {
+    console.log(date);
+
+    if (date) {
+      this.showLoader('Please wait..');
       let scanData = scan_data?.replace(/ +/g, ' ');
       let firstName = scanData?.substring(scanData.indexOf('/') + 1, scanData.indexOf(' '));
       let lastName = scanData?.substring(2, scanData?.indexOf('/'));
@@ -75,7 +78,7 @@ export class ScanPage implements OnInit {
       this.firestore.collection("FlightInfo").get().subscribe(q => {
         if (q.empty) {
           console.log("FlightInfo>>>>>>>no collection");
-          this.goToHome(false, true, false);
+          this.goToHome(false, true, false, null, null);
         } else {
           let isFligthExist = false;
           let isPassenerExist = false;
@@ -92,8 +95,7 @@ export class ScanPage implements OnInit {
                     if (p.empty) {
                       isPassengerEmpty = true;
                       console.log("{Passenger>>>>>>>no collection");
-                      this.firestore.collection('FlightInfo').doc(doc.id).collection('Passengers').add(payload);
-                      this.goToHome(true, false, false);
+                      this.goToHome(true, false, false, payload, docId);
                     } else {
                       p.forEach(obj => {
                         if (obj.data().dept_code == payload.dept_code) {
@@ -103,11 +105,9 @@ export class ScanPage implements OnInit {
                                 if (obj.data().book_ref == payload.book_ref) {
                                   if (obj.data().eticket_ref == payload.eticket_ref) {
                                     if (obj.data().flight_no == payload.flight_no) {
-                                      if (obj.data().update_date == payload.update_date) {
-                                        console.log("Passenger Exist>>>>>>>");
-                                        isPassenerExist = true;
-                                        this.goToHome(false, false, true);
-                                      }
+                                      console.log("Passenger Exist>>>>>>>");
+                                      isPassenerExist = true;
+                                      this.goToHome(false, false, true, null, null);
                                     }
                                   }
                                 }
@@ -118,6 +118,7 @@ export class ScanPage implements OnInit {
                       });
                     }
                   }, (error) => {
+                    this.hideLoader();
                     console.log(error);
                   });
                 }
@@ -126,42 +127,47 @@ export class ScanPage implements OnInit {
           });
 
           if (!isFligthExist) {
-            this.goToHome(false, true, false);
+            this.goToHome(false, true, false, null, null);
           }
 
           setTimeout(() => {
             if (!isPassenerExist && isFligthExist && !isPassengerEmpty) {
               console.log(docId);
-              this.firestore.collection('FlightInfo').doc(docId).collection('Passengers').add(payload);
-              this.goToHome(true, false, false);
+              this.goToHome(true, false, false, payload, docId);
             }
           }, 1000);
         }
 
       }, (error) => {
+        this.hideLoader();
         console.log(error);
       });
     }
   }
 
 
-  goToHome(_success, _fail, _taken) {
-    //Constructing params to send next page
-    let navigationExtras: NavigationExtras = {
-      state: {
-        meal_eligible: _success,
-        meal_ineligible: _fail,
-        meal_taken: _taken,
-      }
-    };
+  goToHome(_success, _fail, _taken, _payload, _id) {
+    this.globalService.meal_eligible = _success;
+    this.globalService.meal_ineligible = _fail;
+    this.globalService.meal_taken = _taken;
+    this.globalService.pay_load = _payload;
+    this.globalService.doc_id = _id;
 
-    //Navigate to result screen
-    this.router.navigate(['home'], navigationExtras);
+    setTimeout(() => {
+      this.hideLoader();
+      
+      //Navigate to result screen
+      this.router.navigate(['home']);
+    }, 1000);
   }
 
 
   async openScanner() {
-    let preventBack = this.platform.backButton.subscribeWithPriority(9999, () => { });
+    let preventBack = this.platform.backButton.subscribeWithPriority(9999, () => {
+      this.hideLoader();
+    });
+
+    this.showLoader('Please wait..');
 
     var barcodeOptions: BarcodeScannerOptions = {
       formats: 'QR_CODE,PDF_417'
@@ -170,36 +176,37 @@ export class ScanPage implements OnInit {
     this.barCodeScanner.scan(barcodeOptions).then(data => {
       console.log("Barcode Value : ", data);
       if (data) {
-
         //If scan cancelled by user return with null
         if (data.cancelled) {
+          this.hideLoader();
           return;
         }
-
-        if (data.format != 'PDF_417') {
-          this.notify('Invalid Data. Please try again!');
-          return;
-        }
-
 
         if (data.text) {
           if (data.text.substring(0, 2) == 'M1') {
+
+            setTimeout(() => {
+              this.hideLoader();
+            }, 1000);
+
             this.openCalendar(data.text);
           } else {
-            this.notify('Invalid Data. Please try again!');
+            this.hideLoader();
+            this.notify('Invalid. Please try again!');
           }
+        } else {
+          this.hideLoader();
         }
-
       }
     }).catch(err => {
       console.log("Barcode error : ", err);
+      this.hideLoader();
     }).finally(() => {
       window.setTimeout(() => {
         preventBack.unsubscribe();
       }, 1000);
     });
   }
-
 
   async notify(msg) {
     const alert = await this.alertController.create({
@@ -210,5 +217,21 @@ export class ScanPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  //show the loading bar
+  showLoader(msg) {
+    return this.loadingController.create({
+      message: msg,
+      backdropDismiss: false,
+      showBackdrop: true
+    }).then(loader => {
+      loader.present();
+    });
+  }
+
+  //hide the loading bar
+  hideLoader() {
+    return this.loadingController.dismiss();
   }
 }

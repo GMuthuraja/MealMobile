@@ -16,6 +16,7 @@ import { environment } from '../environments/environment';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { CalendarModule } from './calendar';
 import { DatePipe } from '@angular/common';
+import { ScanPage } from './scan/scan.page';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,6 +34,7 @@ import { DatePipe } from '@angular/common';
     SplashScreen,
     BarcodeScanner,
     DatePipe,
+    ScanPage,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]
