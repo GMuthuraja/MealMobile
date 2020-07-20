@@ -16,14 +16,13 @@ import { environment } from '../environments/environment';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { CalendarModule } from './calendar';
 import { DatePipe } from '@angular/common';
-import { ScanPage } from './scan/scan.page';
 
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
-    BrowserModule, 
-    IonicModule.forRoot(), 
+    BrowserModule,
+    IonicModule.forRoot(),
     AppRoutingModule,
     CalendarModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -34,9 +33,8 @@ import { ScanPage } from './scan/scan.page';
     SplashScreen,
     BarcodeScanner,
     DatePipe,
-    ScanPage,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }

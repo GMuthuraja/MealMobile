@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController, AlertController } from '@ionic/angular';
+import { AlertController, ModalController, LoadingController, Platform } from '@ionic/angular';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { GlobalService } from '../services/global.service';
-import { ScanPage } from '../scan/scan.page';
+import { BarcodeScanner, BarcodeScannerOptions } from '@ionic-native/barcode-scanner/ngx';
+import { DatePipe } from '@angular/common';
+import { CalendarModalOptions, CalendarModal, CalendarResult } from '../calendar';
 
 @Component({
   selector: 'app-home',
@@ -12,40 +13,246 @@ import { ScanPage } from '../scan/scan.page';
 
 export class HomePage {
 
-  mealEligible: boolean = false;
-  mealInEligible: boolean = false;
-  mealTaken: boolean = false;
+  mealEligible: any;
+  mealInEligible: any;
+  mealTaken: any;
   docId: any;
   payload: any;
 
   constructor(
-    private navCtrl: NavController,
-    private globalService: GlobalService,
-    private scanPage: ScanPage,
     private firestore: AngularFirestore,
-    private alertController: AlertController) { }
+    private alertController: AlertController,
+    private barCodeScanner: BarcodeScanner,
+    private datePipe: DatePipe,
+    private loadingController: LoadingController,
+    private modalController: ModalController) {
+    this.initialize();
+    this.openScanner();
+  }
 
-  ionViewWillEnter() {
-    if (this.globalService.meal_eligible) {
-      this.mealEligible = true;
-    } if (this.globalService.meal_ineligible) {
-      this.mealInEligible = true;
-    } if (this.globalService.meal_taken) {
-      this.mealTaken = true;
-    } if (this.globalService.doc_id) {
-      this.docId = this.globalService.doc_id;
-    } if (this.globalService.pay_load) {
-      this.payload = this.globalService.pay_load;
+  initialize() {
+    this.mealEligible = false;
+    this.mealInEligible = false;
+    this.mealTaken = false;
+    this.docId = '';
+    this.payload = '';
+  }
+
+  async openScanner() {
+    this.showLoader('Please wait..');
+    var barcodeOptions: BarcodeScannerOptions = {
+      formats: 'QR_CODE,PDF_417'
     }
 
-    console.log(this.globalService.meal_eligible);
-    console.log(this.globalService.meal_ineligible);
-    console.log(this.globalService.meal_taken);
-    console.log(this.globalService.doc_id);
-    console.log(this.globalService.pay_load);
+    this.barCodeScanner.scan(barcodeOptions).then(data => {
+      console.log("Barcode Value : ", data);
+      if (data) {
+        if (data.text) {
+          if (data.text.substring(0, 2) == 'M1') {
+
+            setTimeout(() => {
+              this.hideLoader();
+            }, 1000);
+
+            this.openCalendar(data.text);
+          } else {
+            this.hideLoader();
+            this.notify('Invalid. Please try again!');
+          }
+        } else {
+          this.hideLoader();
+        }
+      }
+    }).catch(err => {
+      console.log("Barcode error : ", err);
+      this.hideLoader();
+      navigator['app'].exitApp();
+    });
+  }
+
+  async openCalendar(scan_data) {
+    var yesterday = new Date();
+    var numberOfDaysToSub = 1;
+    yesterday.setDate(yesterday.getDate() - numberOfDaysToSub);
+
+    var tomorrow = new Date();
+    var numberOfDaysToAdd = 1;
+    tomorrow.setDate(tomorrow.getDate() + numberOfDaysToAdd);
+
+    console.log(yesterday);
+    console.log(tomorrow);
+
+    const options: CalendarModalOptions = {
+      monthFormat: 'MMMM YYYY', // Month format for calendar component
+      title: 'Select Date', // Title of the calendar component
+      doneLabel: 'Done', // Title of the calendar component
+      defaultDate: new Date(),
+      from: yesterday,
+      to: tomorrow
+    };
+
+    const myCalendar = await this.modalController.create({
+      component: CalendarModal,
+      componentProps: { options }
+    });
+
+    myCalendar.present();
+
+    const event: any = await myCalendar.onDidDismiss();
+    const date: CalendarResult = event.data;
+
+    console.log(date);
+
+    if (date) {
+      this.showLoader('Please wait..');
+      let scanData = scan_data?.replace(/ +/g, ' ');
+      let firstName = scanData?.substring(scanData.indexOf('/') + 1, scanData.indexOf(' '));
+      let lastName = scanData?.substring(2, scanData?.indexOf('/'));
+      let fullName = firstName + ' ' + lastName;
+      let bookingRef = scanData?.split(' ')[1].substring(1).trim();
+      let departureCode = scanData?.split(' ')[2].substring(0, 3).trim();
+      let arrivalCode = scanData?.split(' ')[2].substring(3, 6).trim();
+      let flightNum = scanData?.split(' ')[3].trim();
+      let eTicketNum = scanData?.substring(scanData?.lastIndexOf('065'), scanData?.lastIndexOf('SV')).trim();
+
+      let payload = {
+        pass_name: fullName,
+        book_ref: bookingRef,
+        dept_code: departureCode,
+        arr_code: arrivalCode,
+        flight_no: flightNum,
+        eticket_ref: eTicketNum,
+        depart_date: this.datePipe.transform(date.dateObj, 'yyyy-MM-dd'),
+        update_date: this.datePipe.transform(new Date(), 'yyyy-MM-dd')
+      }
+
+      console.log(date.dateObj);
+      console.log(scanData);
+      console.log(payload);
+
+      this.firestore.collection("FlightInfo").get().subscribe(q => {
+        if (q.empty) {
+          console.log("FlightInfo>>>>>>>no collection");
+          this.goToHome(false, true, false, null, null);
+        } else {
+          let isFligthExist = false;
+          let isPassenerExist = false;
+          let isPassengerEmpty = false;
+          let docId;
+          q.forEach(doc => {
+            if (doc.data().dept_code == payload.dept_code) {
+              if (doc.data().flight_no == payload.flight_no) {
+                if (doc.data().depart_date == payload.depart_date) {
+                  isFligthExist = true;
+                  docId = doc.id;
+                  console.log("Flight Exist>>>>>>> " + docId);
+                  this.firestore.collection('FlightInfo').doc(docId).collection('Passengers').get().subscribe(p => {
+                    if (p.empty) {
+                      isPassengerEmpty = true;
+                      console.log("{Passenger>>>>>>>no collection");
+                      this.goToHome(true, false, false, payload, docId);
+                    } else {
+                      p.forEach(obj => {
+                        if (obj.data().dept_code == payload.dept_code) {
+                          if (obj.data().arr_code == payload.arr_code) {
+                            if (obj.data().depart_date == payload.depart_date) {
+                              if (obj.data().pass_name == payload.pass_name) {
+                                if (obj.data().book_ref == payload.book_ref) {
+                                  if (obj.data().eticket_ref == payload.eticket_ref) {
+                                    if (obj.data().flight_no == payload.flight_no) {
+                                      console.log("Passenger Exist>>>>>>>");
+                                      isPassenerExist = true;
+                                      this.goToHome(false, false, true, null, null);
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      });
+                    }
+                  }, (error) => {
+                    this.hideLoader();
+                    console.log(error);
+                  });
+                }
+              }
+            }
+          });
+
+          if (!isFligthExist) {
+            this.goToHome(false, true, false, null, null);
+          }
+
+          setTimeout(() => {
+            if (!isPassenerExist && isFligthExist && !isPassengerEmpty) {
+              console.log(docId);
+              this.goToHome(true, false, false, payload, docId);
+            }
+          }, 1000);
+        }
+
+      }, (error) => {
+        this.hideLoader();
+        console.log(error);
+      });
+    } else {
+      this.initialize();
+      this.openScanner();
+    }
+  }
+
+
+  goToHome(_success, _fail, _taken, _payload, _id) {
+    this.mealEligible = _success;
+    this.mealInEligible = _fail;
+    this.mealTaken = _taken;
+    this.payload = _payload;
+    this.docId = _id;
+
+    setTimeout(() => {
+      this.hideLoader();
+    }, 1000);
+  }
+
+  async notify(msg) {
+    const alert = await this.alertController.create({
+      header: 'eStaff',
+      message: msg,
+      backdropDismiss: false,
+      buttons: ['OK']
+    });
+
+    await alert.present();
+  }
+
+  //show the loading bar
+  showLoader(msg) {
+    return this.loadingController.create({
+      message: msg,
+      backdropDismiss: false,
+      showBackdrop: true
+    }).then(loader => {
+      loader.present();
+    });
+  }
+
+  //hide the loading bar
+  hideLoader() {
+    return this.loadingController.dismiss();
   }
 
   async confirmMeal() {
+    console.log(this.docId);
+    console.log(this.payload);
+
+    if (this.docId) {
+      if (this.payload) {
+        this.firestore.collection('FlightInfo').doc(this.docId).collection('Passengers').add(this.payload);
+      }
+    }
+
     const alert = await this.alertController.create({
       header: 'eStaff',
       message: 'Meal Confirmed!',
@@ -64,21 +271,12 @@ export class HomePage {
 
     //on dismiss alert popup after press 'OK'
     await alert.onDidDismiss().then(data => {
-
-      console.log(this.docId);
-      console.log(this.payload);
-
-      if (this.docId) {
-        if (this.payload) {
-          this.firestore.collection('FlightInfo').doc(this.docId).collection('Passengers').add(this.payload);
-          this.navCtrl.pop();
-        }
-      }
+      this.goBack();
     });
   }
 
   goBack() {
-    this.navCtrl.pop();
-    this.scanPage.openScanner();
+    this.initialize();
+    this.openScanner();
   }
 }
