@@ -1,13 +1,13 @@
 export const environment = {
   production: true,
   firebaseConfig: {
-    apiKey: "AIzaSyBWlpIBH11c1SkvT3JfG7QX5elyWV1MMNU",
-    authDomain: "saudia-estaff-meal.firebaseapp.com",
-    databaseURL: "https://saudia-estaff-meal.firebaseio.com",
-    projectId: "saudia-estaff-meal",
-    storageBucket: "saudia-estaff-meal.appspot.com",
-    messagingSenderId: "416324052649",
-    appId: "1:416324052649:web:dc53ac593917183c37ebb8",
-    measurementId: "G-JFYR8Q8TCK"
+    apiKey: "AIzaSyDYFab57RtlHr8n6XDW7wl7zUXu1WieNr4",
+    authDomain: "saudia-meal.firebaseapp.com",
+    databaseURL: "https://saudia-meal.firebaseio.com",
+    projectId: "saudia-meal",
+    storageBucket: "saudia-meal.appspot.com",
+    messagingSenderId: "123020005029",
+    appId: "1:123020005029:web:c731d215c145d462f5474c",
+    measurementId: "G-NSKZV5P6NH"
   }
 };
