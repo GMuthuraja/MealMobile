@@ -27,7 +27,7 @@ export class HomePage {
     private loadingController: LoadingController,
     private modalController: ModalController) {
     this.initialize();
-    this.openScanner();
+    this.openCalendar({});
   }
 
   initialize() {
@@ -71,15 +71,12 @@ export class HomePage {
   }
 
   async openCalendar(scan_data) {
-    var yesterday = new Date();
-    var numberOfDaysToSub = 1;
-    yesterday.setDate(yesterday.getDate() - numberOfDaysToSub);
+    var today = new Date();
 
     var tomorrow = new Date();
     var numberOfDaysToAdd = 1;
     tomorrow.setDate(tomorrow.getDate() + numberOfDaysToAdd);
 
-    console.log(yesterday);
     console.log(tomorrow);
 
     const options: CalendarModalOptions = {
@@ -87,7 +84,7 @@ export class HomePage {
       title: 'Select Date', // Title of the calendar component
       doneLabel: 'Done', // Title of the calendar component
       defaultDate: new Date(),
-      from: yesterday,
+      from: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
       to: tomorrow
     };
 
