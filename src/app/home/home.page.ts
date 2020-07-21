@@ -27,7 +27,7 @@ export class HomePage {
     private loadingController: LoadingController,
     private modalController: ModalController) {
     this.initialize();
-    this.openCalendar({});
+    this.openScanner();
   }
 
   initialize() {
