@@ -30,8 +30,10 @@ export class HomePage {
   }
 
   initializeApp() {
-    this.initialize();
-    this.openScanner();
+    setTimeout(() => {
+      this.initialize();
+      this.openScanner();
+    }, 1000);
   }
 
   initialize() {
@@ -46,10 +48,18 @@ export class HomePage {
     this.showLoader('Please wait..');
     var barcodeOptions: BarcodeScannerOptions = {
       formats: 'QR_CODE,PDF_417'
+
     }
 
     this.barCodeScanner.scan(barcodeOptions).then(data => {
       console.log("Barcode Value : ", data);
+
+      if (data.cancelled) {
+        this.hideLoader();
+        this.initializeApp();
+        return;
+      }
+
       if (data) {
         if (data.text) {
           if (data.text.substring(0, 2) == 'M1') {
