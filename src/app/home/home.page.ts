@@ -26,6 +26,10 @@ export class HomePage {
     private datePipe: DatePipe,
     private loadingController: LoadingController,
     private modalController: ModalController) {
+    this.initializeApp();
+  }
+
+  initializeApp() {
     this.initialize();
     this.openScanner();
   }
@@ -57,10 +61,8 @@ export class HomePage {
             this.openCalendar(data.text);
           } else {
             this.hideLoader();
-            this.notify('Invalid. Please try again!');
+            this.notifyCallBack('Invalid. Please try again!');
           }
-        } else {
-          this.hideLoader();
         }
       }
     }).catch(err => {
@@ -195,8 +197,7 @@ export class HomePage {
         console.log(error);
       });
     } else {
-      this.initialize();
-      this.openScanner();
+      this.initializeApp();
     }
   }
 
@@ -215,7 +216,7 @@ export class HomePage {
 
   async notify(msg) {
     const alert = await this.alertController.create({
-      header: 'eStaff',
+      header: 'Saudia Meal',
       message: msg,
       backdropDismiss: false,
       buttons: ['OK']
@@ -224,20 +225,28 @@ export class HomePage {
     await alert.present();
   }
 
-  //show the loading bar
-  showLoader(msg) {
-    return this.loadingController.create({
+
+  async notifyCallBack(msg) {
+    const alert = await this.alertController.create({
+      header: 'Saudia Meal',
       message: msg,
       backdropDismiss: false,
-      showBackdrop: true
-    }).then(loader => {
-      loader.present();
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => {
+            alert.dismiss(true);
+            return false;
+          }
+        }]
     });
-  }
 
-  //hide the loading bar
-  hideLoader() {
-    return this.loadingController.dismiss();
+    await alert.present();
+
+    //on dismiss alert popup after press 'OK'
+    await alert.onDidDismiss().then(data => {
+      this.initializeApp();
+    });
   }
 
   async confirmMeal() {
@@ -251,7 +260,7 @@ export class HomePage {
     }
 
     const alert = await this.alertController.create({
-      header: 'eStaff',
+      header: 'Saudia Meal',
       message: 'Meal Confirmed!',
       backdropDismiss: false,
       buttons: [
@@ -268,12 +277,24 @@ export class HomePage {
 
     //on dismiss alert popup after press 'OK'
     await alert.onDidDismiss().then(data => {
-      this.goBack();
+      this.initializeApp();
     });
   }
 
-  goBack() {
-    this.initialize();
-    this.openScanner();
+
+  //show the loading bar
+  showLoader(msg) {
+    return this.loadingController.create({
+      message: msg,
+      backdropDismiss: false,
+      showBackdrop: true
+    }).then(loader => {
+      loader.present();
+    });
+  }
+
+  //hide the loading bar
+  hideLoader() {
+    return this.loadingController.dismiss();
   }
 }
