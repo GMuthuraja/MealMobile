@@ -84,20 +84,13 @@ export class HomePage {
 
   async openCalendar(scan_data) {
     var today = new Date();
-
-    var tomorrow = new Date();
-    var numberOfDaysToAdd = 1;
-    tomorrow.setDate(tomorrow.getDate() + numberOfDaysToAdd);
-
-    console.log(tomorrow);
-
     const options: CalendarModalOptions = {
       monthFormat: 'MMMM YYYY', // Month format for calendar component
       title: 'Select Date', // Title of the calendar component
       doneLabel: 'Done', // Title of the calendar component
-      defaultDate: new Date(),
+      defaultDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
       from: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
-      to: tomorrow
+      to: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
     };
 
     const myCalendar = await this.modalController.create({
