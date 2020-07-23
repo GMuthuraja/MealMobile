@@ -82,6 +82,15 @@ export class HomePage {
     });
   }
 
+
+  getWhiteSpaceIndex(scanData) {
+    for (var i = 0; i < 10; i++) {
+      if ((scanData?.split(' ')[i].length == 7) && (scanData?.split(' ')[i].substring(0, 1) == 'E')) {
+        return i;
+      }
+    }
+  }
+
   async openCalendar(scan_data) {
     var today = new Date();
     const options: CalendarModalOptions = {
@@ -108,13 +117,12 @@ export class HomePage {
     if (date) {
       this.showLoader('Please wait..');
       let scanData = scan_data?.replace(/ +/g, ' ');
-      let firstName = scanData?.substring(scanData.indexOf('/') + 1, scanData.indexOf(' '));
-      let lastName = scanData?.substring(2, scanData?.indexOf('/'));
-      let fullName = firstName + ' ' + lastName;
-      let bookingRef = scanData?.split(' ')[1].substring(1).trim();
-      let departureCode = scanData?.split(' ')[2].substring(0, 3).trim();
-      let arrivalCode = scanData?.split(' ')[2].substring(3, 6).trim();
-      let flightNum = scanData?.split(' ')[3].trim();
+      let index = this.getWhiteSpaceIndex(scanData);
+      let bookingRef = scanData?.split(' ')[index].substring(1).trim();
+      let fullName = scanData?.substring(2, scanData?.indexOf(bookingRef) - 1).trim();
+      let departureCode = scanData?.split(' ')[index + 1].substring(0, 3).trim();
+      let arrivalCode = scanData?.split(' ')[index + 1].substring(3, 6).trim();
+      let flightNum = scanData?.split(' ')[index + 2].trim();
       let eTicketNum = scanData?.substring(scanData?.lastIndexOf('065'), scanData?.lastIndexOf('SV')).trim();
 
       let payload = {
